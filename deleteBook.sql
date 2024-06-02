@@ -3,15 +3,17 @@ use unifun_project;
 DROP PROCEDURE IF EXISTS deleteBook;
 
 delimiter //
-create procedure deleteBook(in bookName varchar(250), in authorName varchar(250))
+create procedure deleteBook(in bookName varchar(250), in authorName varchar(250),in publisherName varchar(255),
+in publishedYear varchar(4),
+in isbnCode varchar(13))
 begin
 # creating variables to store temp values
 declare v_book_id int;
 declare v_genre_id int;
 declare v_author_id int;
 
-select book_id into v_book_id from books where book_name=bookName and author_id=
-						(select author_id from authors where author=authorName);
+select book_id into v_book_id from books where books.book_name=bookName and author_id=
+		(select author_id from authors where author=authorName) and publisher_id=(select publisher_id from publishers where publisher=publisherName) and published=publishedYear and isbn=isbnCode; 
 if v_book_id is not null then -- checking if that book really exists
 # selecting all genres that belong to that book and concatenating them into one string
 	set @v_genres = '';
@@ -19,7 +21,7 @@ if v_book_id is not null then -- checking if that book really exists
     into @v_genres
     from genres 
     left join books_genres using(genre_id) 
-    where book_id=(select book_id from books where book_name=bookName);
+    where book_id=v_book_id;
 
 # deleting the book  (genres from that book are also delted)
 	delete from books where book_id=v_book_id;
@@ -53,3 +55,4 @@ end if;
 
 end//
 delimiter ;
+ call deleteBook('The selfish giant','Oscar Wilde','Penguin','1998','9780141190004');

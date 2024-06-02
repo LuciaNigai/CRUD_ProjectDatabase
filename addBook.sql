@@ -19,7 +19,7 @@ declare v_genre_id int;
 
 
 select book_id into v_book_id from books where books.book_name=bookName and author_id=
-		(select author_id from authors where author=authorName); 
+		(select author_id from authors where author=authorName) and publisher_id=(select publisher_id from publishers where publisher=publisherName) and published=publishedYear and isbn=isbnCode; 
 if v_book_id is null then -- if book does not exist
 	# inserting new book
 	if (select  count(*) from books where isbn=isbnCode)=0 -- check if the book with that isbn already exists
@@ -72,4 +72,4 @@ end if;
 END//
 delimiter ;
 
--- call addBook('The selfish giant','Oscar Wilde','Penguin','1998','Gothic Fiction,Pholosophical Fiction','9780141192344');
+ call addBook('The selfish giant','Oscar Wilde','Penguin','1998','Gothic Fiction,Pholosophical Fiction','9780141190004');

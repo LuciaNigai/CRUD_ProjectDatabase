@@ -5,7 +5,7 @@ delimiter //
 
 CREATE PROCEDURE getBooks()
 begin
-# fetting all books data from the database
+# getting all books data from the database
 select books.book_name, authors.author, publishers.publisher,books.published as 'year', GROUP_CONCAT(genre) as 'genres',books.isbn
 from books
 left join authors using(author_id)
@@ -16,6 +16,8 @@ group by books.book_name, authors.author, publishers.publisher, books.isbn, book
 
 end//
 delimiter ;
+
+call getBooks();
 
 
 

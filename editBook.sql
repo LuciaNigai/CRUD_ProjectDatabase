@@ -23,8 +23,8 @@ declare v_genre_id int;
 declare v_new_genre int;
 
 # updating book name
-select book_id into v_book_id from books where book_name=bookName and author_id=(select author_id from authors where author=authorName);
-select v_book_id;
+select book_id into v_book_id from books where books.book_name=bookName and author_id=
+		(select author_id from authors where author=authorName) and publisher=(select publisher_id from publishers where publisher=publisherName) and published=publishedYear and isbn=isbnCode; 
 if (bookName<>bookNameAfter) then
 	update books
 	set book_name=bookNameAfter
@@ -33,20 +33,49 @@ end if;
 
 # updating author name 
 select author_id into v_author_id from authors where author=authorName;
-select v_author_id;
 if(authorName<>authorNameAfter) then
-	update authors
-    set author=authorNameAfter
-    where author_id = v_author_id;
+	if exists(select * from authors where author=authorNameAfter) then
+		update books
+        set author_id = (select author_id from authors where author=authorNameAfter)
+        where book_id=v_book_id;
+		if (select count(*) from books where author_id=v_author_id)=0 then
+			delete from authors
+            where author_id = v_author_d;
+        end if;
+	else
+		insert into authors(author) values(authorNameAfter);
+		set @author_id_new = last_insert_id();
+		update books
+		set author_id = @author_id_new
+		where book_id = v_book_id;
+		if (select count(*) from books where author_id=v_author_id)=0 then
+			delete from authors
+            where author_id = v_author_d;
+        end if;
+    end if;
+    
 end if;
 
 # updating publisher name
 select publisher_id into v_publisher_id from publishers where publisher=publisherName;
-select v_publisher_id;
 if(publisherName<>publisherNameAfter) then
-	update publishers
-    set publisher=publisherNameAfter
-    where publisher_id=v_publisher_id;
+	if exists(select publisher_id from publishers where publisher=publisherNameAfter) then
+		update books
+        set publisher_id = (select publisher_id from publishers where publisher=publisherNameAfter)
+        where book_id=v_book_id;
+        if (select count(*) from books where publisher_id=v_publisher_id)=0 then
+			delete from publishers where publisher_id=v_publisher_id;
+        end if;
+	else
+		insert into publishers(publisher) values (publisherNameAfter);
+        set @newublisherid = last_insert_id();
+        update books
+        set publisher_id = @newublisherid
+        where book_id=v_book_id;
+		if (select count(*) from books where publisher_id=v_publisher_id)=0 then
+			delete from publishers where publisher_id=v_publisher_id;
+        end if;
+    end if;
 end if;
 
 # updating published year
@@ -148,4 +177,4 @@ end if;
 
 END //
 DELIMITER ;
- -- call editBook('The selfish giant','Oscar Wilde','Penguin','1999','Science Fiction,Philosophical Fiction','9780141192642','The selfish giant','Oscar Wilde','Penguin','2001','Science Fiction,Science fiction','9780141192344');
+ call editBook('The selfish giant','Oscar Wilde','Mahaon','1999','Fiction,Historical Fiction,Historical Romance','9788172344504','The selfish giant','Oscar Wilde','Penguin','1999','Fiction,Historical Fiction,Historical Romance','9788172344504');
